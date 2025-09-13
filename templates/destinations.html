@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="container">
+    
+    <h2 class="section-title">Explore Destinations</h2>
+    <div class="destinations">
+        {% for d in destinations %}
+            <div class="card">
+                {% if d.image %}
+                    <img src="{{ d.image.url }}" alt="{{ d.name }}">
+                {% else %}
+                    <div class="card-image-placeholder">
+                        <span>No Image Available</span>
+                    </div>
+                {% endif %}
+                <div class="card-content">
+                    <h3>{{ d.name }}, {{ d.country }}</h3>
+                    <p>{{ d.description|truncatewords:20 }}</p>
+                    <p><strong>Best Season:</strong> {{ d.best_season }}</p>
+                    <p><strong>Type:</strong> {{ d.travel_type }}</p>
+                    <a href="{% url 'destination_detail' d.pk %}" style="margin-top: 20px;" class="btn">Explore More</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>No destinations available yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

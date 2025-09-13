@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container form-container">
+    <h2>{{ title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-primary">Save</button>
+        <a href="{% url 'travelplan_list' %}" class="btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container form-container">
+    <h2>Update Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="first_name">First Name</label>
+        <input type="text" name="first_name" value="{{ user.first_name }}" required>
+
+        <label for="last_name">Last Name</label>
+        <input type="text" name="last_name" value="{{ user.last_name }}" required>
+
+        <label for="nationality">Nationality</label>
+        <input type="text" name="nationality" value="{{ user.nationality }}">
+
+        <label for="city">City</label>
+        <input type="text" name="city" value="{{ user.city }}">
+
+        <label for="postal_address">Postal Address</label>
+        <input type="text" name="postal_address" value="{{ user.postal_address }}">
+
+        <label for="mobile_no">Mobile Number</label>
+        <input type="text" name="mobile_no" value="{{ user.mobile_no }}" required>
+
+        <label for="email">Email Address</label>
+        <input type="email" name="email" value="{{ user.email }}" required>
+
+        <label for="travel_season">Preferred Travel Season</label>
+        <select name="travel_season">
+            {% for key, value in user.SEASON_CHOICES %}
+            <option value="{{ key }}" {% if user.travel_season == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="travel_type">Preferred Travel Type</label>
+        <select name="travel_type">
+            {% for key, value in user.TRAVEL_TYPE_CHOICES %}
+            <option value="{{ key }}" {% if user.travel_type == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="age_range">Age Range</label>
+        <select name="age_range">
+            {% for key, value in user.AGE_RANGE_CHOICES %}
+            <option value="{{ key }}" {% if user.age_range == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="budget_range">Budget Range</label>
+        <select name="budget_range">
+            {% for key, value in user.BUDGET_RANGE_CHOICES %}
+            <option value="{{ key }}" {% if user.budget_range == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="form-actions">
+            <button type="reset" class="btn-reset">Reset</button>
+            <button type="submit" class="btn-primary">Update</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

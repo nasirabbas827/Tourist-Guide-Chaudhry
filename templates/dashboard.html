@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard-container">
+
+    <!-- Hero Welcome -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome, {{ user.first_name }} {{ user.last_name }}</h1>
+            <p>Here’s your personalized travel dashboard with updates, destinations, activities, and tips.</p>
+            <a href="{% url 'service_list' %}" class="btn">Services</a>
+        </div>
+    </section>
+
+    <!-- Notifications -->
+    <section class="container">
+        <h2 class="section-title">Latest Updates</h2>
+        <div class="destinations">
+            {% for n in notifications %}
+                <div class="card">
+                    <div class="card-content">
+                        <h3>{{ n.title }}</h3>
+                        <p>{{ n.message }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No notifications available.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Suggested Destinations -->
+    <section class="container">
+        <h2 class="section-title">Suggested Destinations</h2>
+        <div class="destinations">
+            {% for d in suggested_destinations %}
+                <div class="card">
+                    {% if d.image %}
+                        <img src="{{ d.image.url }}" alt="{{ d.name }}">
+                    {% endif %}
+                    <div class="card-content">
+                        <h3>{{ d.name }} ({{ d.city }}, {{ d.country }})</h3>
+                        <p>{{ d.description }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No destinations available for your preferences.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Suggested Activities -->
+    <section class="container">
+        <h2 class="section-title">Upcoming Activities</h2>
+        <div class="destinations">
+            {% for a in suggested_activities %}
+                <div class="card">
+                    <div class="card-content">
+                        <h3>{{ a.title }} ({{ a.activity_type }})</h3>
+                        <p>{{ a.description }}</p>
+                        <small>{{ a.start_date }} - {{ a.end_date }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No activities available.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Travel Tips -->
+    <section class="tips">
+        <div class="container">
+            <h2 class="section-title">Travel Tips for {{ user.travel_season|title }}</h2>
+            <ul class="tips-list">
+                {% for t in suggested_tips %}
+                    <li><strong>{{ t.title }}:</strong> {{ t.description|truncatewords:15 }}</li>
+                {% empty %}
+                    <li>No travel tips available right now.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+
+    <!-- Map Section -->
+    <section class="map-section container">
+        <h2 class="section-title">Your Suggested Destinations Map</h2>
+        <div id="map" style="height: 500px; border-radius: 10px; margin-top: 15px;"></div>
+    </section>
+
+</div>
+
+<!-- Leaflet JS & CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize map
+        var map = L.map('map').setView([30.3753, 69.3451], 4);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Parse Django route_data safely
+        var routeData = {{ route_data|safe }};
+
+        // Add markers & polylines from routeData
+        routeData.forEach(function(route) {
+            var latlngs = [];
+
+            route.points.forEach(function(pt) {
+                if (pt.lat && pt.lng) {
+                    var marker = L.marker([pt.lat, pt.lng]).addTo(map);
+                    marker.bindPopup("<b>" + route.destination + "</b><br>" + route.country);
+                    latlngs.push([pt.lat, pt.lng]);
+                }
+            });
+
+            // Draw a line if multiple points exist
+            if (latlngs.length > 1) {
+                L.polyline(latlngs, {color: "blue"}).addTo(map);
+            }
+        });
+    });
+</script>
+
+{% endblock %}

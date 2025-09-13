@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Explore the World with Me</h1>
+            <p>Join my adventures as I discover hidden gems, local cultures, and breathtaking landscapes across the globe.</p>
+            <a href="#" class="btn">Start Reading</a>
+        </div>
+    </section>
+
+<!-- Featured Destinations -->
+<section class="container">
+    <h2 class="section-title">Featured Destinations</h2>
+    <div class="destinations">
+        {% for d in destinations %}
+            <div class="card">
+                {% if d.image %}
+                    <img src="{{ d.image.url }}" alt="{{ d.name }}">
+                {% endif %}
+                <div class="card-content">
+                    <h3>{{ d.name }}, {{ d.country }}</h3>
+                    <p>{{ d.description|truncatewords:20 }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <p>No destinations available right now.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Travel Tips -->
+<section class="tips">
+    <div class="container">
+        <h2 class="section-title">Travel Tips</h2>
+        <ul class="tips-list">
+            {% for t in tips %}
+                <li>
+                    <strong>{{ t.title }}:</strong> {{ t.description|truncatewords:15 }}
+
+                    <!-- Social Share Icons -->
+                    <span class="social-share" style="margin-left:10px;">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" title="Share on Facebook">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?text={{ t.title|urlencode }}&url={{ request.build_absolute_uri }}" target="_blank" title="Share on Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ t.title|urlencode }}" target="_blank" title="Share on LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </span>
+                </li>
+            {% empty %}
+                <li>No travel tips available right now.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+
+
+    <!-- Subscribe Section -->
+    <section class="subscribe">
+        <div class="container">
+            <h2 class="section-title">Stay Updated</h2>
+            <p>Subscribe to get the latest travel stories and tips straight to your inbox.</p>
+            <form class="subscribe-form">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                <button type="submit" class="subscribe-btn">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+<!-- Map Section -->
+<section class="map-section container">
+    <h2 class="section-title">Destinations Map</h2>
+    <div id="map" style="height: 500px; border-radius: 10px; margin-top: 15px;"></div>
+</section>
+
+<!-- Leaflet JS & CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var map = L.map('map').setView([30.3753, 69.3451], 4);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var routeData = {{ route_data|safe }};
+
+    routeData.forEach(function(route) {
+        var latlngs = [];
+
+        route.points.forEach(function(pt) {
+            if (pt.lat && pt.lng) {
+                var marker = L.marker([pt.lat, pt.lng]).addTo(map);
+                marker.bindPopup("<b>" + route.destination + "</b><br>" + route.country);
+                latlngs.push([pt.lat, pt.lng]);
+            }
+        });
+
+        if (latlngs.length > 1) {
+            L.polyline(latlngs, {color: "blue"}).addTo(map);
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Travel Gallery</h2>
+
+    {% if request.session.user_id %}
+    <!-- Upload Form -->
+    <form method="POST" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        <input type="hidden" name="upload_photo" value="1">
+        <div class="mb-2">
+            <label for="destination">Destination</label>
+            <select name="destination" required class="form-select">
+                <option value="">-- Select Destination --</option>
+                {% for d in destinations %}
+                    <option value="{{ d.pk }}">{{ d.name }}, {{ d.country }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-2">
+            <label for="image">Photo</label>
+            <input type="file" name="image" required class="form-control">
+        </div>
+        <div class="mb-2">
+            <label for="caption">Caption</label>
+            <input type="text" name="caption" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload Photo</button>
+    </form>
+    {% endif %}
+
+    <!-- Photo Grid -->
+    <div class="destinations">
+        {% for p in photos %}
+        <div class="card">
+            <img src="{{ p.image.url }}" alt="{{ p.caption }}" class="img-fluid">
+            <div class="card-content">
+                <h4>{{ p.destination.name }} (by {{ p.user.first_name }})</h4>
+                <p>{{ p.caption }}</p>
+                <small>Uploaded: {{ p.created_at|date:"M d, Y" }}</small>
+
+                <!-- Like button -->
+<form method="POST" class="like-form mt-2">
+    {% csrf_token %}
+    <input type="hidden" name="like_photo" value="1">
+    <input type="hidden" name="photo_id" value="{{ p.pk }}">
+    <button type="submit" class="like-btn" style="background:none; border:none; cursor:pointer; font-size:18px;">
+        {% if p.is_liked %}
+            ❤️
+        {% else %}
+            🤍
+        {% endif %}
+    </button>
+    <span>{{ p.likes.count }} Likes</span>
+</form>
+
+            </div>
+
+            <!-- Comments -->
+            <div class="comments mt-2">
+                <h1>Comments</h1>
+                <ul class="tips-list">
+                    {% for c in p.comments.all %}
+                        <li><strong>{{ c.user.first_name }}:</strong> {{ c.comment }}</li>
+                    {% empty %}
+                        <li>No comments yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {% if request.session.user_id %}
+            <!-- Add Comment -->
+            <form method="POST" class="mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="add_comment" value="1">
+                <input type="hidden" name="photo_id" value="{{ p.pk }}">
+                <textarea name="comment" rows="2" class="form-control" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="btn btn-secondary mt-2">Post Comment</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

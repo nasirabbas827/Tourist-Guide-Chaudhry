@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container form-container">
+    <h2>Register</h2>
+<form method="post" onsubmit="return validateCaptcha()">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Captcha Section -->
+    <p><strong>Captcha: <span id="captcha"></span></strong></p>
+    <input type="hidden" name="captcha" id="captcha_hidden">
+    <input type="text" name="captcha_input" placeholder="Enter captcha" required>
+
+    <button type="reset">Reset</button>
+    <button type="submit">Submit</button>
+</form>
+
+</div>
+<script>
+    function generateCaptcha() {
+        let a = Math.floor(Math.random() * 10);
+        let b = Math.floor(Math.random() * 10);
+        document.getElementById("captcha").innerText = a + " + " + b;
+        document.getElementById("captcha_hidden").value = (a + b);
+    }
+    function validateCaptcha() {
+        return true; // backend validation will handle mismatch
+    }
+    window.onload = generateCaptcha;
+</script>
+{% endblock %}
