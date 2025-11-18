@@ -1,111 +1,1039 @@
 {% extends "base.html" %}
-{% block content %}
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Explore the World with Me</h1>
-            <p>Join my adventures as I discover hidden gems, local cultures, and breathtaking landscapes across the globe.</p>
-            <a href="#" class="btn">Start Reading</a>
-        </div>
-    </section>
+{% load static %}
 
-<!-- Featured Destinations -->
-<section class="container">
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    /* 🎨 Global Styling & Variables */
+    :root {
+        --primary-color: #0077b6; /* Deep Blue */
+        --primary-hover: #0096c7;
+        --secondary-color: #00b4d8; /* Brighter Cyan */
+        --accent-color: #ff6b6b; /* Coral for highlights */
+        --accent-hover: #ff8e8e;
+        --text-primary: #1d3557; /* Dark Blue for Headings */
+        --text-secondary: #457b9d; /* Muted Blue for Body Text */
+        --light-bg: #f8f9fa; /* Off-White/Light Gray */
+        --card-bg: #ffffff;
+        --gradient-primary: linear-gradient(135deg, #0077b6, #00b4d8);
+        --gradient-secondary: linear-gradient(135deg, #ff6b6b, #ffa500);
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --star-color: #ffc300; /* Gold */
+        --map-line-color: #0077b6;
+        --font-serif: 'Playfair Display', serif;
+        --font-sans: 'Montserrat', sans-serif;
+    }
+
+    /* Import Google Fonts for a modern, elegant look */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Montserrat:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: var(--font-sans);
+        line-height: 1.6;
+        color: var(--text-secondary);
+        background-color: var(--light-bg);
+        overflow-x: hidden;
+    }
+
+    h1, h2, h3 {
+        font-family: var(--font-serif);
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    .container { 
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 0 20px; 
+    }
+    
+    .section-title {
+        font-size: 2.8rem;
+        color: var(--text-primary);
+        text-align: center;
+        margin: 80px 0 30px;
+        font-weight: 700;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        width: 100px;
+        height: 5px;
+        background: var(--gradient-primary);
+        display: block;
+        margin: 15px auto;
+        border-radius: 3px;
+        opacity: 0.8;
+    }
+
+    /* Buttons (Call-to-Action) */
+    .btn {
+        display: inline-block;
+        background: var(--gradient-primary);
+        color: white;
+        padding: 14px 30px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(0, 119, 182, 0.4);
+        margin-top: 20px;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: var(--gradient-secondary);
+        transition: all 0.3s ease;
+        z-index: -1;
+    }
+    
+    .btn:hover::before {
+        width: 100%;
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 119, 182, 0.5);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        box-shadow: none;
+    }
+    
+    .btn-secondary:hover {
+        background: var(--light-bg);
+        color: var(--primary-hover);
+    }
+
+    /* Hero Section */
+    .hero {
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        height: 90vh;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+    
+    .hero-content h1 {
+        font-size: 4.5rem;
+        margin-bottom: 20px;
+        line-height: 1.1;
+        color: white;
+        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        animation: fadeInUp 1s ease;
+    }
+    
+    .hero-content p {
+        font-size: 1.4rem;
+        margin-bottom: 30px;
+        font-weight: 400;
+        animation: fadeInUp 1s ease 0.2s both;
+    }
+    
+    .hero-content .btn {
+        animation: fadeInUp 1s ease 0.4s both;
+    }
+    
+    /* Search & Filter Bar */
+    .search-filter-bar {
+        background: white;
+        padding: 20px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        gap: 15px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .search-input {
+        position: relative;
+        flex-grow: 1;
+        min-width: 250px;
+    }
+    
+    .search-input i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+    
+    .search-input input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 1px solid #e0e0e0;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    
+    .search-input input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
+    }
+    
+    .filter-select {
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 50px;
+        font-size: 1rem;
+        background: white;
+        min-width: 180px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
+    }
+
+    /* Grid Layouts & Cards */
+    .destinations-grid, .tips-grid, .activities-grid, .services-grid, .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 35px;
+        margin-bottom: 70px;
+    }
+    
+    .card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .card img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .card:hover img {
+        transform: scale(1.05);
+    }
+    
+    .card-content {
+        padding: 25px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .card-content h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        transition: color 0.3s;
+    }
+    
+    .card:hover .card-content h3 {
+        color: var(--primary-color);
+    }
+    
+    .card-content p {
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+    
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 25px;
+        background: var(--light-bg);
+        border-top: 1px solid #e0e0e0;
+        font-size: 0.9rem;
+    }
+    
+    .card-footer span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .social-share a {
+        color: var(--text-secondary);
+        margin-left: 10px;
+        transition: color 0.3s;
+    }
+    
+    .social-share a:hover {
+        color: var(--primary-color);
+    }
+
+    /* Services Section */
+    .service-card {
+        text-align: center;
+        padding: 40px 30px;
+        border-radius: var(--border-radius-lg);
+        background: white;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+    
+    .service-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .service-card i {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .service-card h3 {
+        font-size: 1.8rem;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Reviews/Testimonials */
+    .review-card {
+        background: white;
+        padding: 30px;
+        border-radius: var(--border-radius-lg);
+        border-left: 5px solid var(--secondary-color);
+        position: relative;
+        font-style: italic;
+        box-shadow: var(--shadow-md);
+        min-height: 150px;
+        transition: all 0.3s ease;
+    }
+    
+    .review-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .review-card i.quote {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        opacity: 0.1;
+    }
+    
+    .reviewer-info {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed #eee;
+        font-style: normal;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    .star-rating {
+        color: var(--star-color);
+    }
+
+    /* Map Section */
+    #map {
+        height: 500px;
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 70px;
+    }
+
+    /* Subscribe Section */
+    .subscribe {
+        padding: 90px 20px;
+        margin: 80px 0;
+        background: var(--gradient-primary);
+        color: white;
+        text-align: center;
+        border-radius: var(--border-radius-lg);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .subscribe::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+        opacity: 0.1;
+        z-index: 0;
+    }
+    
+    .subscribe > .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .subscribe .section-title {
+        color: white;
+    }
+    
+    .subscribe .section-title::after {
+        background: white;
+    }
+    
+    .subscribe p {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .subscribe-form {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .subscribe-form input[type="email"] {
+        flex-grow: 1;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .subscribe-form .btn {
+        margin-top: 0;
+        padding: 15px 30px;
+        background: var(--gradient-secondary);
+        box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    .subscribe-form .btn:hover {
+        box-shadow: 0 10px 20px rgba(255, 107, 107, 0.5);
+    }
+
+    /* Activities Grid Styling */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 70px;
+}
+
+.activity-card {
+    border-left: 5px solid var(--accent-color);
+}
+
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.activity-details span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Service Listings Styling */
+.service-listing-card {
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.service-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.service-header i {
+    font-size: 2.5rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.service-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.service-type {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.service-destination {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.service-listing-card .card-footer {
+    background: transparent;
+    border-top: 1px solid #e0e0e0;
+    padding: 20px 25px;
+}
+
+.service-listing-card .btn-secondary {
+    margin-top: 0;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .activities-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .service-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+    /* Results Info */
+    .results-info {
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        grid-column: 1 / -1;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+        .hero { 
+            height: 70vh; 
+            background-attachment: scroll;
+        }
+        
+        .hero-content h1 { 
+            font-size: 3rem; 
+        }
+        
+        .hero-content p { 
+            font-size: 1.1rem; 
+        }
+        
+        .section-title { 
+            font-size: 2rem; 
+            margin: 50px 0 20px; 
+        }
+        
+        .search-filter-bar { 
+            flex-direction: column; 
+            align-items: stretch; 
+        }
+        
+        .search-input, .filter-select { 
+            min-width: 100%; 
+        }
+        
+        .destinations-grid, .tips-grid, .services-grid, .reviews-grid { 
+            grid-template-columns: 1fr; 
+        }
+        
+        .subscribe-form { 
+            flex-direction: column; 
+        }
+        
+        .subscribe-form input[type="email"] { 
+            border-radius: 10px; 
+            margin-bottom: 10px;
+        }
+        
+        .subscribe-form .btn { 
+            width: 100%; 
+        }
+        
+        #map {
+            height: 300px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-content h1 { 
+            font-size: 2.5rem; 
+        }
+        
+        .section-title { 
+            font-size: 1.8rem; 
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<section class="hero">
+    <div class="hero-content container">
+        <h1>Discover the Untold Stories of the World</h1>
+        <p>Join my adventures as I discover hidden gems, local cultures, and breathtaking landscapes across the globe.</p>
+        <a href="#destinations-section" class="btn"><i class="fas fa-compass"></i> Explore Destinations</a>
+    </div>
+</section>
+
+<section class="container" style="margin-top: -60px; position: relative; z-index: 10;">
+    <div class="services-grid">
+        <div class="service-card">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Curated Routes</h3>
+            <p>Hand-picked itineraries for a truly authentic travel experience.</p>
+        </div>
+        <div class="service-card">
+            <i class="fas fa-camera"></i>
+            <h3>Visual Stories</h3>
+            <p>Breathtaking photography and vivid accounts from the road.</p>
+        </div>
+        <div class="service-card">
+            <i class="fas fa-globe-americas"></i>
+            <h3>Global Insights</h3>
+            <p>Practical tips, cultural notes, and budget breakdowns for any traveler.</p>
+        </div>
+    </div>
+</section>
+
+<section class="container" id="destinations-section">
     <h2 class="section-title">Featured Destinations</h2>
-    <div class="destinations">
+    <div class="results-info">Showing <span id="destResults">{{ destinations.count }}</span> destinations</div>
+
+    <div class="search-filter-bar">
+        <div class="search-input">
+            <i class="fas fa-search"></i>
+            <input type="text" id="destSearchInput" placeholder="Search by name, city, or country...">
+        </div>
+        <select id="destTypeFilter" class="filter-select">
+            <option value="">All Types</option>
+            {% for key, val in Destination.TRAVEL_TYPE_CHOICES %}
+                <option value="{{ key }}">{{ val }}</option>
+            {% endfor %}
+        </select>
+        <select id="destSeasonFilter" class="filter-select">
+            <option value="">All Seasons</option>
+            {% for key, val in Destination.SEASON_CHOICES %}
+                <option value="{{ key }}">{{ val }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="destinations-grid" id="destinationsGrid">
         {% for d in destinations %}
-            <div class="card">
-                {% if d.image %}
-                    <img src="{{ d.image.url }}" alt="{{ d.name }}">
-                {% endif %}
-                <div class="card-content">
-                    <h3>{{ d.name }}, {{ d.country }}</h3>
-                    <p>{{ d.description|truncatewords:20 }}</p>
-                </div>
+        <div class="card destination-card"
+             data-search="{{ d.name|lower }} {{ d.city|lower }} {{ d.country|lower }} {{ d.description|lower }}"
+             data-type="{{ d.travel_type }}"
+             data-season="{{ d.best_season }}">
+            <img src="{% if d.image %}{{ d.image.url }}{% else %}{% static 'img/default_destination.jpg' %}{% endif %}" alt="{{ d.name }}">
+            <div class="card-content">
+                <h3>{{ d.name }}, {{ d.country }}</h3>
+                <p>{{ d.description|truncatewords:18 }}</p>
             </div>
+            <div class="card-footer">
+                <span><i class="fas fa-tag"></i> {{ d.get_travel_type_display }}</span>
+                <span><i class="fas fa-sun"></i> Best: {{ d.get_best_season_display }}</span>
+            </div>
+        </div>
         {% empty %}
-            <p>No destinations available right now.</p>
+        <div class="empty-state">
+            <i class="fas fa-plane-departure"></i>
+            <p>No destinations available yet. Time to plan a trip!</p>
+        </div>
         {% endfor %}
     </div>
 </section>
 
-<!-- Travel Tips -->
-<section class="tips">
+<section style="background: var(--light-bg); padding: 60px 0;">
     <div class="container">
-        <h2 class="section-title">Travel Tips</h2>
-        <ul class="tips-list">
-            {% for t in tips %}
-                <li>
-                    <strong>{{ t.title }}:</strong> {{ t.description|truncatewords:15 }}
+        <h2 class="section-title">Essential Travel Tips</h2>
+        <div class="results-info">Showing <span id="tipResults">{{ tips.count }}</span> tips</div>
 
-                    <!-- Social Share Icons -->
-                    <span class="social-share" style="margin-left:10px;">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" title="Share on Facebook">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        <a href="https://twitter.com/intent/tweet?text={{ t.title|urlencode }}&url={{ request.build_absolute_uri }}" target="_blank" title="Share on Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ t.title|urlencode }}" target="_blank" title="Share on LinkedIn">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
+        <div class="search-filter-bar">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="tipSearchInput" placeholder="Search tips...">
+            </div>
+            <select id="tipSeasonFilter" class="filter-select">
+                <option value="">All Seasons</option>
+                {% for key, val in Destination.SEASON_CHOICES %}
+                    <option value="{{ key }}">{{ val }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="tips-grid" id="tipsGrid">
+            {% for t in tips %}
+            <div class="card tips-card"
+                 data-search="{{ t.title|lower }} {{ t.description|lower }}"
+                 data-season="{{ t.season|default:'' }}">
+                <div class="card-content">
+                    <h3><i class="fas fa-lightbulb"></i> {{ t.title }}</h3>
+                    <p>{{ t.description|truncatewords:20 }}</p>
+                </div>
+                <div class="card-footer">
+                    <span><i class="fas fa-calendar-alt"></i> {{ t.created_at|date:"M d, Y" }}</span>
+                    <span class="social-share">
+                        <a href="https://twitter.com/intent/tweet?text={{ t.title|urlencode }}&url={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="https://facebook.com/sharer.php?u={{ request.build_absolute_uri }}" target="_blank"><i class="fab fa-facebook"></i></a>
                     </span>
-                </li>
+                </div>
+            </div>
             {% empty %}
-                <li>No travel tips available right now.</li>
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>No travel tips available.</p>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </div>
 </section>
 
+<!-- Add this after the Travel Tips section -->
+<section class="container">
+    <h2 class="section-title">Upcoming Activities & Events</h2>
+    <div class="results-info">Showing <span id="activityResults">{{ activities.count }}</span> activities</div>
 
-    <!-- Subscribe Section -->
-    <section class="subscribe">
-        <div class="container">
-            <h2 class="section-title">Stay Updated</h2>
-            <p>Subscribe to get the latest travel stories and tips straight to your inbox.</p>
-            <form class="subscribe-form">
-                    <input type="text" placeholder="Your Name" required>
-                    <input type="email" placeholder="Your Email" required>
-                <button type="submit" class="subscribe-btn">Subscribe</button>
-            </form>
+    <div class="activities-grid" id="activitiesGrid">
+        {% for activity in activities %}
+        <div class="card activity-card">
+            <div class="card-content">
+                <h3><i class="fas fa-calendar-check"></i> {{ activity.title }}</h3>
+                <p><strong>Destination:</strong> {{ activity.destination.name }}, {{ activity.destination.country }}</p>
+                <p>{{ activity.description|truncatewords:15 }}</p>
+                <div class="activity-details">
+                    <span><i class="fas fa-map-marker-alt"></i> {{ activity.get_activity_type_display }}</span>
+                    <span><i class="fas fa-clock"></i> {{ activity.start_date|date:"M d" }} - {{ activity.end_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
         </div>
-    </section>
-
-<!-- Map Section -->
-<section class="map-section container">
-    <h2 class="section-title">Destinations Map</h2>
-    <div id="map" style="height: 500px; border-radius: 10px; margin-top: 15px;"></div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <p>No upcoming activities at the moment. Check back soon!</p>
+        </div>
+        {% endfor %}
+    </div>
 </section>
 
-<!-- Leaflet JS & CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Add this after the Activities section -->
+<section style="background: var(--light-bg); padding: 60px 0;">
+    <div class="container">
+        <h2 class="section-title">Partner Services</h2>
+        <div class="results-info">Showing <span id="serviceResults">{{ services.count }}</span> services</div>
+
+        <div class="services-grid" id="servicesGrid">
+            {% for service in services %}
+            <div class="card service-listing-card">
+                <div class="card-content">
+                    <div class="service-header">
+                        <i class="fas 
+                            {% if service.service_type == 'hotel' %}fa-hotel
+                            {% elif service.service_type == 'flight' %}fa-plane
+                            {% elif service.service_type == 'tour_operator' %}fa-map-signs
+                            {% else %}fa-concierge-bell{% endif %}">
+                        </i>
+                        <h3>{{ service.name }}</h3>
+                    </div>
+                    <p class="service-type">{{ service.get_service_type_display }}</p>
+                    <p>{{ service.description|truncatewords:20 }}</p>
+                    {% if service.destination %}
+                    <p class="service-destination">
+                        <i class="fas fa-map-pin"></i> Available in: {{ service.destination.name }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ service.contact_url }}" target="_blank" class="btn btn-secondary">
+                        <i class="fas fa-external-link-alt"></i> Visit Website
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-handshake"></i>
+                <p>No partner services available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <h2 class="section-title">What Readers Say</h2>
+    <div class="reviews-grid">
+        <div class="review-card">
+            <i class="fas fa-quote-right quote"></i>
+            <p>"The Bali itinerary was flawless! I found so many unique spots I would have never seen otherwise. Highly recommend this blog for authentic travel."</p>
+            <div class="reviewer-info">
+                <span>Anna S. from Berlin</span>
+                <span class="star-rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </span>
+            </div>
+        </div>
+        <div class="review-card">
+            <i class="fas fa-quote-right quote"></i>
+            <p>"The packing tips alone saved my life on my last backpacking trip! Practical, concise, and beautifully written posts."</p>
+            <div class="reviewer-info">
+                <span>Tom K. from New York</span>
+                <span class="star-rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </span>
+            </div>
+        </div>
+        <div class="review-card">
+            <i class="fas fa-quote-right quote"></i>
+            <p>"I've been following this blog for years and it never disappoints. The photography is stunning and the travel advice is always spot-on."</p>
+            <div class="reviewer-info">
+                <span>Maria L. from Barcelona</span>
+                <span class="star-rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <h2 class="section-title">Global Travel Routes</h2>
+    <div id="map"></div>
+</section>
+
+<section class="subscribe">
+    <div class="container">
+        <h2 class="section-title">Join the Adventure</h2>
+        <p>Get the latest destinations, travel tips, and photography delivered straight to your inbox.</p>
+        <form class="subscribe-form">
+            <input type="email" placeholder="Your Email Address" required>
+            <button type="submit" class="btn">Subscribe Now</button>
+        </form>
+    </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    var map = L.map('map').setView([30.3753, 69.3451], 4);
+// Dynamic Map Line Color from CSS Variable
+const mapLineColor = getComputedStyle(document.documentElement).getPropertyValue('--map-line-color').trim() || '#0077b6';
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+document.addEventListener("DOMContentLoaded", function () {
+    // Map
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    var routeData = {{ route_data|safe }};
+    // Initialize activity and service counters
+    const activityResults = document.getElementById('activityResults');
+    const serviceResults = document.getElementById('serviceResults');
+    
+    if (activityResults) {
+        activityResults.textContent = document.querySelectorAll('.activity-card').length;
+    }
+    
+    if (serviceResults) {
+        serviceResults.textContent = document.querySelectorAll('.service-listing-card').length;
+    }
 
-    routeData.forEach(function(route) {
-        var latlngs = [];
+    const routeData = {{ route_data|safe }};
 
-        route.points.forEach(function(pt) {
-            if (pt.lat && pt.lng) {
-                var marker = L.marker([pt.lat, pt.lng]).addTo(map);
-                marker.bindPopup("<b>" + route.destination + "</b><br>" + route.country);
-                latlngs.push([pt.lat, pt.lng]);
+    routeData.forEach(route => {
+        const latlngs = route.points
+            .sort((a, b) => a.order - b.order)
+            .map(p => [p.lat, p.lng])
+            .filter(coord => coord[0] && coord[1]);
+
+        if (latlngs.length > 0) {
+            route.points.forEach((pt, i) => {
+                if (pt.lat && pt.lng) {
+                    L.marker([pt.lat, pt.lng])
+                        .addTo(map)
+                        .bindPopup(`<b>${route.destination}</b><br>${route.country}`);
+                }
+            });
+
+            if (latlngs.length > 1) {
+                L.polyline(latlngs, {
+                    color: mapLineColor,
+                    weight: 5,
+                    opacity: 0.8
+                }).addTo(map);
             }
-        });
-
-        if (latlngs.length > 1) {
-            L.polyline(latlngs, {color: "blue"}).addTo(map);
         }
+    });
+
+    // Filtering Function
+    function setupFilter(config) {
+        const { searchId, typeId, seasonId, gridId, counterId } = config;
+        const search = document.getElementById(searchId);
+        const typeFilter = typeId ? document.getElementById(typeId) : null;
+        const seasonFilter = seasonId ? document.getElementById(seasonId) : null;
+        const grid = document.getElementById(gridId);
+        const counter = document.getElementById(counterId);
+        const cards = grid.querySelectorAll('.card');
+
+        function filter() {
+            const term = search.value.toLowerCase().trim();
+            const typeVal = typeFilter ? typeFilter.value : '';
+            const seasonVal = seasonFilter ? seasonFilter.value : '';
+
+            let visible = 0;
+
+            cards.forEach(card => {
+                const searchText = card.getAttribute('data-search') || '';
+                const type = card.getAttribute('data-type') || '';
+                const season = card.getAttribute('data-season') || '';
+
+                const matchesSearch = searchText.includes(term);
+                const matchesType = !typeVal || type === typeVal;
+                const matchesSeason = !seasonVal || season === seasonVal;
+
+                if (matchesSearch && matchesType && matchesSeason) {
+                    card.style.display = 'flex';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            counter.textContent = visible;
+        }
+
+        search.addEventListener('input', filter);
+        if (typeFilter) typeFilter.addEventListener('change', filter);
+        if (seasonFilter) seasonFilter.addEventListener('change', filter);
+
+        filter(); // Initial
+    }
+
+    // Initialize Filters
+    setupFilter({
+        searchId: "destSearchInput",
+        typeId: "destTypeFilter",
+        seasonId: "destSeasonFilter",
+        gridId: "destinationsGrid",
+        counterId: "destResults"
+    });
+
+    setupFilter({
+        searchId: "tipSearchInput",
+        seasonId: "tipSeasonFilter",
+        gridId: "tipsGrid",
+        counterId: "tipResults"
     });
 });
 </script>

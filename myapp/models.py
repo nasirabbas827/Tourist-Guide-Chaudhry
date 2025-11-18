@@ -220,4 +220,5 @@ class DestinationRoute(models.Model):
 
     def __str__(self):
         return f"Route point {self.order} for {self.destination.name}"
+    
 		

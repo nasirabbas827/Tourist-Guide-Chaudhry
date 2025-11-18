@@ -30,7 +30,7 @@
                 <td><a href="{{ s.contact_url }}" target="_blank">Contact</a></td>
                 <td>{{ s.created_at }}</td>
                 <td>
-                    <a href="{% url 'service_update' s.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a style="margin: 10px;" href="{% url 'service_update' s.pk %}" class="btn btn-sm btn-warning">Edit</a>
                     <a href="{% url 'service_delete' s.pk %}" class="btn btn-sm btn-danger"
                        onclick="return confirm('Are you sure you want to delete this service?');">
                        Delete

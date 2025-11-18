@@ -1,77 +1,556 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ destination.name }}, {{ destination.country }}</h2>
-    {% if destination.image %}
-        <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="img-fluid mb-3" height="500px" width="100%" style="border-radius: 20px;">
-    {% endif %}
 
-<div style="margin: 20px;">
-    <p><strong>City:</strong> {{ destination.city }}</p>
-    <p><strong>Best Season:</strong> {{ destination.best_season }}</p>
-    <p><strong>Type:</strong> {{ destination.travel_type }}</p>
-    <p>{{ destination.description }}</p>
-</div>
+<div class="destination-detail-container">
 
-    <hr>
-    <h3>Upcoming Events in {{ destination.name }}</h3>
-    <div class="destinations mb-4">
-        {% for e in events %}
-            <div class="card">
-                {% if e.image %}
-                    <img src="{{ e.image.url }}" alt="{{ e.title }}">
-                {% endif %}
-                <div class="card-content">
-                    <h4>{{ e.title }}</h4>
-                    <p>{{ e.description|truncatewords:25 }}</p>
-                    <p><strong>Date:</strong> {{ e.date }}</p>
-                </div>
+    <section class="destination-hero">
+        <div class="hero-image-wrapper">
+            {% if destination.image %}
+                <img src="{{ destination.image.url }}" alt="{{ destination.name }}" class="main-destination-img">
+            {% endif %}
+        </div>
+        
+        <div class="hero-content">
+            <h1 class="page-title">{{ destination.name }}, {{ destination.country }}</h1>
+            
+            <div class="tag-group mb-4">
+                <span class="detail-tag location-tag"><i class="fas fa-map-marker-alt"></i> {{ destination.city }}</span>
+                <span class="detail-tag season-tag {{ destination.best_season }}">{{ destination.get_best_season_display }}</span>
+                <span class="detail-tag type-tag">{{ destination.get_travel_type_display }}</span>
             </div>
-        {% empty %}
-            <p>No events available for this destination yet.</p>
-        {% endfor %}
-    </div>
-
-    <hr>
-    <h3>Reviews</h3>
-    <ul class="list-group mb-3">
-        {% for r in reviews %}
-            <li class="list-group-item">
-                <strong>{{ r.user.first_name }}:</strong> 
-                ⭐ {{ r.rating }}  
-                <p>{{ r.comment }}</p>
-                <small>{{ r.created_at }}</small>
-            </li>
-        {% empty %}
-            <li class="list-group-item">No reviews yet. Be the first to review!</li>
-        {% endfor %}
-    </ul>
-
-    {% if request.session.user_id %}
-    <h3>Leave a Review</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="rating">Rating (1–5)</label>
-            <select name="rating" id="rating" class="form-select" required>
-                <option value="">--Select--</option>
-                {% for i in "12345" %}
-                    <option value="{{ i }}">{{ i }}</option>
-                {% endfor %}
-            </select>
+            
+            <div class="description-block">
+                <h3>About {{ destination.name }}</h3>
+                <p>{{ destination.description }}</p>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="comment">Comment</label>
-            <textarea name="comment" id="comment" rows="4" class="form-control" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Post Review</button>
-    </form>
-    {% else %}
-<div style="margin: 20px;">
+    </section>
 
-        <p><a href="{% url 'login' %}">Login</a> to leave a review.</p>
+    <hr class="section-divider">
+
+    <!-- New Activities Section -->
+    <section class="activities-section">
+        <h2>🎯 Activities in {{ destination.name }}</h2>
+        <div class="activities-grid">
+            {% for activity in destination.activities.all %}
+                <div class="activity-card">
+                    <div class="activity-icon">
+                        <i class="fas 
+                            {% if activity.activity_type == 'hiking' %}fa-hiking
+                            {% elif activity.activity_type == 'festival' %}fa-music
+                            {% elif activity.activity_type == 'cultural_tour' %}fa-landmark
+                            {% elif activity.activity_type == 'local_event' %}fa-users
+                            {% elif activity.activity_type == 'sports' %}fa-futbol
+                            {% else %}fa-map-marker-alt{% endif %}">
+                        </i>
+                    </div>
+                    <div class="activity-content">
+                        <h4>{{ activity.title }}</h4>
+                        <p class="activity-type">{{ activity.get_activity_type_display }}</p>
+                        <p class="activity-description">{{ activity.description|truncatewords:20 }}</p>
+                        <div class="activity-dates">
+                            <span class="date-range">
+                                <i class="fas fa-calendar-alt"></i> 
+                                {{ activity.start_date|date:"M d" }} - {{ activity.end_date|date:"M d, Y" }}
+                            </span>
+                            {% if activity.start_date > today %}
+                                <span class="upcoming-badge">Upcoming</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-binoculars"></i>
+                    <p>No activities listed for this destination yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <hr class="section-divider">
+    
+    <section class="events-section">
+        <h2>🗓️ Upcoming Events in {{ destination.name }}</h2>
+        <div class="events-grid">
+            {% for e in events %}
+                <div class="event-card">
+                    {% if e.image %}
+                        <div class="event-image-wrapper">
+                            <img src="{{ e.image.url }}" alt="{{ e.title }}">
+                        </div>
+                    {% endif %}
+                    <div class="card-content">
+                        <h4>{{ e.title }}</h4>
+                        <p class="event-date"><i class="fas fa-calendar-alt"></i> {{ e.date|date:"F j, Y" }}</p>
+                        <p class="event-description">{{ e.description|truncatewords:25 }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <p>No exciting events are scheduled for this destination yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="reviews-section">
+        <h2>⭐ Traveler Reviews</h2>
+        
+        <ul class="reviews-list">
+            {% for r in reviews %}
+                <li class="review-item">
+                    <div class="review-header">
+                        <strong>{{ r.user.first_name }}</strong> 
+                        <span class="star-rating">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= r.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <p class="review-comment">{{ r.comment }}</p>
+                    <small class="review-date">{{ r.created_at|date:"M d, Y" }}</small>
+                </li>
+            {% empty %}
+                <li class="empty-review">No reviews yet. Be the first to share your experience!</li>
+            {% endfor %}
+        </ul>
+
+        {% if request.session.user_id %}
+            <div class="review-form-wrapper">
+                <h3>Leave a Review</h3>
+                <form method="POST" class="review-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="rating">Rating (1–5)</label>
+                        <select name="rating" id="rating" class="form-select" required>
+                            <option value="" disabled selected>-- Select Rating --</option>
+                            {% for i in "12345" %}
+                                <option value="{{ i }}">{{ i }} Star{% if i != '1' %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">Comment</label>
+                        <textarea name="comment" id="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary-submit">Post Review</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="login-prompt">
+                <p>Please <a href="{% url 'login' %}" class="login-link">Login</a> to leave a review.</p>
+            </div>
+        {% endif %}
+    </section>
+
 </div>
 
-    {% endif %}
-</div>
+<style>
+    /* 1. Base Variables & Typography */
+    :root {
+        --primary-color: #007bff; /* Blue */
+        --accent-color: #ffc107;  /* Yellow for stars */
+        --text-dark: #212529;
+        --text-muted: #6c757d;
+        --bg-light: #f8f9fa;
+        --card-bg: #ffffff;
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --border-radius-lg: 16px;
+        --border-radius-sm: 8px;
+    }
+
+    .destination-detail-container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    h1, h2, h3 { color: var(--text-dark); margin-bottom: 20px; }
+    h2 { font-size: 2rem; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
+    
+    .section-divider {
+        border: 0;
+        height: 1px;
+        background-color: #e9ecef;
+        margin: 40px 0;
+    }
+
+    /* 2. Hero Section */
+    .destination-hero {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        margin-bottom: 40px;
+    }
+
+    .hero-image-wrapper {
+        flex: 1.5;
+        min-width: 350px;
+        overflow: hidden;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+    }
+    .main-destination-img {
+        width: 100%;
+        height: 450px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease-in-out;
+    }
+    .hero-image-wrapper:hover .main-destination-img {
+        transform: scale(1.03);
+    }
+
+    .hero-content {
+        flex: 1;
+        padding-top: 10px;
+    }
+    .page-title {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        line-height: 1.2;
+    }
+
+    .tag-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .detail-tag {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .location-tag { background: #e9ecef; color: var(--text-dark); }
+    .season-tag { background: #d4edda; color: #155724; } /* Default Green */
+    .type-tag { background: #cce5ff; color: #004085; } /* Default Blue */
+
+    .season-tag.winter { background: #cce5ff; color: #004085; }
+    .season-tag.summer { background: #fff3cd; color: #856404; }
+    .season-tag.spring { background: #d4edda; color: #155724; }
+    .season-tag.autumn { background: #f8d7da; color: #721c24; }
+
+    .description-block h3 {
+        font-size: 1.3rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+    .description-block p {
+        line-height: 1.6;
+        color: var(--text-muted);
+    }
+
+    /* 3. Activities Section */
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+    }
+    .activity-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 25px;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .activity-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .activity-icon {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    .activity-content {
+        flex: 1;
+    }
+    .activity-content h4 {
+        margin: 0 0 8px 0;
+        font-size: 1.3rem;
+        color: var(--text-dark);
+    }
+    .activity-type {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+    .activity-description {
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+    .activity-dates {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .date-range {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .upcoming-badge {
+        background: #28a745;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* 4. Events Grid */
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    .event-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+    .event-image-wrapper {
+        height: 180px;
+        overflow: hidden;
+    }
+    .event-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .card-content {
+        padding: 20px;
+    }
+    .card-content h4 {
+        margin-top: 0;
+        font-size: 1.2rem;
+    }
+    .event-date {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    .event-description {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    .empty-state {
+        grid-column: 1 / -1;
+        padding: 40px 20px;
+        text-align: center;
+        background: var(--bg-light);
+        border-radius: var(--border-radius-lg);
+        color: var(--text-muted);
+    }
+    .empty-state i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    /* 5. Reviews List */
+    .reviews-list {
+        list-style: none;
+        padding: 0;
+    }
+    .review-item {
+        background: var(--card-bg);
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: var(--border-radius-sm);
+        border-left: 5px solid var(--primary-color);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .empty-review {
+        padding: 15px;
+        text-align: center;
+        background: var(--bg-light);
+        border-radius: var(--border-radius-sm);
+        color: var(--text-muted);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .review-header strong {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+    }
+    .star-rating {
+        color: var(--accent-color);
+        font-size: 1.2rem;
+    }
+    .review-comment {
+        margin: 5px 0 10px 0;
+        color: var(--text-dark);
+    }
+    .review-date {
+        display: block;
+        text-align: right;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    /* 6. Review Form */
+    .review-form-wrapper {
+        background: var(--bg-light);
+        padding: 30px;
+        border-radius: var(--border-radius-lg);
+        margin-top: 30px;
+    }
+    .review-form-wrapper h3 {
+        color: var(--primary-color);
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: var(--border-radius-sm);
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    .btn-primary-submit {
+        background: var(--primary-color);
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+    .btn-primary-submit:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+    }
+    
+    .login-prompt {
+        padding: 20px;
+        background: #ffe5cc;
+        border: 1px solid #ffcc99;
+        border-radius: var(--border-radius-sm);
+        text-align: center;
+    }
+    .login-link {
+        color: #ff8c00;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .login-link:hover {
+        text-decoration: underline;
+    }
+
+    /* 7. Responsiveness */
+    @media (max-width: 992px) {
+        .destination-hero {
+            flex-direction: column;
+        }
+        .hero-image-wrapper {
+            min-width: 100%;
+            margin-bottom: 20px;
+        }
+        .main-destination-img {
+            height: 350px;
+        }
+        .activities-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        .events-grid {
+            grid-template-columns: 1fr;
+        }
+        .activity-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        .activity-icon {
+            align-self: center;
+        }
+        .activity-dates {
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+    }
+    @media (max-width: 576px) {
+        .main-destination-img {
+            height: 250px;
+        }
+        .review-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .review-header strong {
+            margin-bottom: 5px;
+        }
+        .tag-group {
+            gap: 5px;
+        }
+        .activity-card {
+            padding: 20px;
+        }
+    }
+</style>
+
 {% endblock %}

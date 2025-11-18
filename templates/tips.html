@@ -1,33 +1,426 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
 
-<section class="tips">
+<section class="section">
     <div class="container">
-        <h2 class="section-title">Travel Tips</h2>
-        <ul class="tips-list">
-            {% for t in tips %}
-                <li>
-                    <strong>{{ t.title }}:</strong> {{ t.description }}
 
-                    <!-- Social Share Icons -->
-                    <span class="social-share" style="margin-left:10px;">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" title="Share on Facebook">
-                            <i class="fab fa-facebook"></i>
+        <div class="page-header">
+            <h1 class="page-title">💡 Travel Tips & Expert Advice</h1>
+            <p>Browse {{ tips.count }} expert tips to make your journey unforgettable</p>
+        </div>
+
+        <div class="search-filter-bar">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search tips by title or content..." autocomplete="off">
+            </div>
+
+            <select id="seasonFilter" class="form-select">
+                <option value="">All Seasons</option>
+                <option value="summer">Summer</option>
+                <option value="winter">Winter</option>
+                <option value="spring">Spring</option>
+                <option value="autumn">Autumn</option>
+                <option value="general">General Tips</option>
+            </select>
+
+            <button id="resetFilters" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+
+        <div class="results-info">
+            <p><strong id="resultsCount">{{ tips.count }}</strong> tips found</p>
+        </div>
+
+        <div class="tips-grid" id="tipsGrid">
+            {% for t in tips %}
+            <div class="tip-card"
+                 data-title="{{ t.title|lower }}"
+                 data-content="{{ t.description|lower }}"
+                 data-season="{{ t.season|default:'general' }}"> <div class="tip-header">
+                    <div class="tip-icon {{ t.season|default:'general' }}-color">
+                        {% if t.season == 'summer' %}
+                            <i class="fas fa-sun"></i>
+                        {% elif t.season == 'winter' %}
+                            <i class="fas fa-snowflake"></i>
+                        {% elif t.season == 'spring' %}
+                            <i class="fas fa-seedling"></i>
+                        {% elif t.season == 'autumn' %}
+                            <i class="fas fa-leaf"></i>
+                        {% else %}
+                            <i class="fas fa-lightbulb"></i>
+                        {% endif %}
+                    </div>
+                    <div class="tip-title-group">
+                        <h3>{{ t.title }}</h3>
+                        <span class="season-tag {{ t.season|default:'general' }}">
+                            {% if t.season %}{{ t.get_season_display }}{% else %}General{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="tip-body">
+                    <p>{{ t.description|truncatewords:25 }}</p>
+                </div>
+
+                <div class="tip-footer">
+                    <small><i class="far fa-clock"></i> {{ t.created_at|date:"M d, Y" }}</small>
+
+                    <div class="social-share">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}?tip={{ t.id }}"
+                           target="_blank" title="Share on Facebook" class="social-btn facebook">
+                            <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="https://twitter.com/intent/tweet?text={{ t.title|urlencode }}&url={{ request.build_absolute_uri }}" target="_blank" title="Share on Twitter">
+                        <a href="https://twitter.com/intent/tweet?text={{ t.title|urlencode }}&url={{ request.build_absolute_uri }}?tip={{ t.id }}"
+                           target="_blank" title="Share on Twitter" class="social-btn twitter">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ t.title|urlencode }}" target="_blank" title="Share on LinkedIn">
-                            <i class="fab fa-linkedin"></i>
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}?tip={{ t.id }}&title={{ t.title|urlencode }}"
+                           target="_blank" title="Share on LinkedIn" class="social-btn linkedin">
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
-                    </span>
-                </li>
+                        <button class="social-btn copy-link" onclick="copyTipLink({{ t.id }})" title="Copy Link">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
             {% empty %}
-                <li>No travel tips available.</li>
+            <div class="empty-state">
+                <i class="fas fa-lightbulb"></i>
+                <h3>No tips found</h3>
+                <p>Try adjusting your search or filters!</p>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
+
     </div>
 </section>
 
+<style>
+    /* Use variables established in previous updates */
+    :root {
+        --primary-color: #00a699; /* Teal - great for travel/advice */
+        --primary-hover: #008f82;
+        --text-primary: #333;
+        --text-secondary: #666;
+        --light-bg: #f7f7f7;
+        --card-bg: #ffffff;
+        --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.15);
+        --border-radius-lg: 18px;
+    }
+
+    .section {
+        padding: 40px 0;
+        background-color: var(--light-bg);
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* 1. Header & Filter Bar */
+    .page-header { text-align: center; margin-bottom: 40px; }
+    .page-title { font-size: 3rem; color: var(--primary-color); margin-bottom: 10px; font-weight: 700; }
+    .page-header p { font-size: 1.2rem; color: var(--text-secondary); }
+
+    .search-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        background: var(--card-bg);
+        padding: 20px 25px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        margin: 30px 0;
+    }
+
+    .search-input { position: relative; flex: 1; min-width: 280px; }
+    .search-input i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.1rem; }
+    .search-input input, .form-select {
+        width: 100%;
+        padding: 14px 20px 14px 50px;
+        border: 1px solid #ddd;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: var(--card-bg);
+    }
+    .form-select {
+        padding: 14px 18px;
+        padding-left: 18px; /* Override left padding for icon */
+        min-width: 180px;
+        cursor: pointer;
+    }
+    .search-input input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(0, 166, 153, 0.15);
+    }
+
+    .btn { padding: 14px 20px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-outline { background: transparent; border: 2px solid #ddd; color: var(--text-secondary); }
+    .btn-outline:hover { background: var(--light-bg); border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-2px); }
+
+    .results-info { margin: 20px 0; font-size: 1.1rem; color: var(--text-secondary); text-align: right; }
+
+    /* 2. Tips Grid & Card */
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .tip-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Lighter initial shadow */
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+    }
+    .tip-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+
+    .tip-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    .tip-icon {
+        font-size: 2.2rem;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white; /* Icon is white */
+        flex-shrink: 0;
+    }
+
+    /* Icon Color Mapping */
+    .summer-color { background-color: #ffc107; }
+    .winter-color { background-color: #0d6efd; }
+    .spring-color { background-color: #198754; }
+    .autumn-color { background-color: #dc3545; }
+    .general-color { background-color: var(--primary-color); }
+    
+    .tip-title-group h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+    .season-tag {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-top: 5px;
+        display: inline-block;
+        text-transform: capitalize;
+    }
+    .season-tag.summer { background: #fff3cd; color: #856404; }
+    .season-tag.winter { background: #cce5ff; color: #004085; }
+    .season-tag.spring { background: #d4edda; color: #155724; }
+    .season-tag.autumn { background: #f8d7da; color: #721c24; }
+    .season-tag.general { background: #e3f5e3; color: #00a699; } /* Light Teal */
+
+    .tip-body { flex-grow: 1; }
+    .tip-body p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+    }
+
+    /* 3. Footer & Social Sharing */
+    .tip-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px dashed #eee;
+        margin-top: auto;
+    }
+    .tip-footer small {
+        font-size: 0.9rem;
+        color: #777;
+    }
+    .tip-footer small i {
+        margin-right: 5px;
+        color: var(--primary-color);
+    }
+
+    .social-share {
+        display: flex;
+        gap: 8px;
+    }
+    .social-btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-size: 0.9rem;
+        transition: transform 0.2s, opacity 0.2s;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+    .social-btn:hover {
+        opacity: 0.85;
+        transform: scale(1.1);
+    }
+    .social-btn.facebook { background-color: #3b5998; }
+    .social-btn.twitter { background-color: #1da1f2; }
+    .social-btn.linkedin { background-color: #0e76a8; }
+    .social-btn.copy-link { background-color: #6c757d; } /* Gray for link */
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-secondary);
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    .empty-state i { font-size: 4rem; margin-bottom: 20px; color: var(--primary-color); opacity: 0.6; }
+
+    /* 4. Responsiveness */
+    @media (max-width: 768px) {
+        .page-title { font-size: 2.2rem; }
+        .search-filter-bar { flex-direction: column; align-items: stretch; padding: 15px; }
+        .search-input, .form-select, .btn-outline { min-width: 100%; flex-grow: 1; }
+        .tips-grid { grid-template-columns: 1fr; gap: 20px; }
+        
+        .tip-footer { 
+            flex-direction: column; 
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .tip-footer small { order: 2; }
+        .social-share { order: 1; margin-bottom: 5px; }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const seasonFilter = document.getElementById("seasonFilter");
+        const resetBtn = document.getElementById("resetFilters");
+        const cards = document.querySelectorAll(".tip-card");
+        const resultsCount = document.getElementById("resultsCount");
+
+        function filterTips() {
+            const term = searchInput.value.toLowerCase().trim();
+            // Map "General Tips" back to an empty string if it's not set
+            const season = seasonFilter.value === 'general' ? '' : seasonFilter.value; 
+
+            let visible = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute("data-title");
+                const content = card.getAttribute("data-content");
+                // Get the actual stored season, which defaults to 'general' in the HTML if empty
+                const cardSeason = card.getAttribute("data-season"); 
+
+                const matchesSearch = title.includes(term) || content.includes(term);
+                
+                let matchesSeason;
+                if (!season) {
+                    // If 'All Seasons' selected, show all (cardSeason will be 'general' or an actual season)
+                    matchesSeason = true;
+                } else if (season === '') {
+                    // If 'General Tips' selected (value is actually '' in the filter logic but 'general' in HTML)
+                    matchesSeason = cardSeason === 'general';
+                } else {
+                    // Specific season selected
+                    matchesSeason = cardSeason === season;
+                }
+                
+                // Re-evaluate the filter logic based on the 'general' mapping
+                const filterValue = seasonFilter.value;
+                const isGeneralFilter = filterValue === 'general';
+                const isAllFilter = filterValue === '';
+                
+                const cardIsGeneral = card.getAttribute("data-season") === 'general';
+
+                let finalMatch = matchesSearch;
+                
+                if (!isAllFilter) {
+                    // If a specific season OR general is selected
+                    finalMatch = finalMatch && (card.getAttribute("data-season") === filterValue);
+                }
+                // When filter is set to 'All Seasons' (value=""), we already set matchesSeason=true above.
+                // When a specific season like 'summer' is selected, the filter matches that season.
+                // Note: The HTML needs to be updated to map null/empty season to 'general' for better JS filtering.
+                // I updated the HTML structure above to use `data-season="{{ t.season|default:'general' }}"`
+                
+                // Re-simplifying the logic based on the new data-attribute
+                const selectedFilter = seasonFilter.value;
+                const cardDataSeason = card.getAttribute("data-season");
+                
+                const passesSeasonFilter = !selectedFilter || selectedFilter === cardDataSeason;
+                
+                if (matchesSearch && passesSeasonFilter) {
+                    card.style.display = "flex";
+                    visible++;
+                } else {
+                    card.style.display = "none";
+                }
+
+            });
+
+            resultsCount.textContent = visible;
+            document.querySelector('.empty-state').style.display = (visible === 0 ? 'block' : 'none');
+        }
+        
+        // Correcting the 'General Tips' option in the filter dropdown to be handled correctly in JS:
+        // By changing the HTML: <option value="">General Tips</option> to <option value="general">General Tips</option>
+        // and setting the data-attribute default to 'general', the simpler logic now works.
+
+        searchInput.addEventListener("input", filterTips);
+        seasonFilter.addEventListener("change", filterTips);
+        
+        resetBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            seasonFilter.value = "";
+            filterTips();
+        });
+
+        // Initial count
+        setTimeout(filterTips, 0);
+    });
+
+    // Copy tip link with ?tip=id for better sharing
+    function copyTipLink(tipId) {
+        const url = window.location.origin + window.location.pathname + `?tip=${tipId}`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("Link copied to clipboard!");
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+            alert("Failed to copy link. Please copy this manually: " + url);
+        });
+    }
+</script>
 
 {% endblock %}

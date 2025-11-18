@@ -1,85 +1,444 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <h2 class="section-title">Travel Gallery</h2>
+{% load static %}
 
-    {% if request.session.user_id %}
-    <!-- Upload Form -->
-    <form method="POST" enctype="multipart/form-data" class="mb-4">
-        {% csrf_token %}
-        <input type="hidden" name="upload_photo" value="1">
-        <div class="mb-2">
-            <label for="destination">Destination</label>
-            <select name="destination" required class="form-select">
-                <option value="">-- Select Destination --</option>
+{% block content %}
+
+<section class="section">
+    <div class="container">
+
+        <div class="page-header">
+            <h1 class="page-title">🌍 Community Gallery</h1>
+            <p>Explore <strong id="resultsCount">{{ photos.count }}</strong> stunning photos shared by fellow travelers</p>
+        </div>
+
+        {% if request.session.user_id %}
+        <div class="upload-card">
+            <h3><i class="fas fa-cloud-upload-alt"></i> Share Your Travel Moment</h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="upload_photo" value="1">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Destination <span class="required">*</span></label>
+                        <select name="destination" class="form-select" required>
+                            <option value="">-- Choose Destination --</option>
+                            {% for d in destinations %}
+                                <option value="{{ d.pk }}">{{ d.name }}, {{ d.country }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Photo <span class="required">*</span></label>
+                        <input type="file" name="image" accept="image/*" class="form-file-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label>Caption (optional)</label>
+                    <input type="text" name="caption" class="form-control" placeholder="Describe your moment (e.g., Sunset over the Eiffel Tower)" maxlength="200">
+                </div>
+
+                <button type="submit" class="btn btn-primary-submit mt-4">
+                    <i class="fas fa-upload"></i> Upload Photo
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="search-filter-bar">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search destination, city, country or caption..." autocomplete="off">
+            </div>
+
+            <select id="destinationFilter" class="form-select">
+                <option value="">All Destinations</option>
                 {% for d in destinations %}
-                    <option value="{{ d.pk }}">{{ d.name }}, {{ d.country }}</option>
+                    <option value="{{ d.name|lower }} {{ d.city|lower }} {{ d.country|lower }}">
+                        {{ d.name }}, {{ d.country }}
+                    </option>
                 {% endfor %}
             </select>
-        </div>
-        <div class="mb-2">
-            <label for="image">Photo</label>
-            <input type="file" name="image" required class="form-control">
-        </div>
-        <div class="mb-2">
-            <label for="caption">Caption</label>
-            <input type="text" name="caption" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Upload Photo</button>
-    </form>
-    {% endif %}
 
-    <!-- Photo Grid -->
-    <div class="destinations">
-        {% for p in photos %}
-        <div class="card">
-            <img src="{{ p.image.url }}" alt="{{ p.caption }}" class="img-fluid">
-            <div class="card-content">
-                <h4>{{ p.destination.name }} (by {{ p.user.first_name }})</h4>
-                <p>{{ p.caption }}</p>
-                <small>Uploaded: {{ p.created_at|date:"M d, Y" }}</small>
+            <button id="resetFilters" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+        
+        <div class="gallery-grid" id="galleryGrid">
+            {% for p in photos %}
+            <div class="photo-card"
+                 data-search="{{ p.destination.name|lower }} {{ p.destination.city|lower }} {{ p.destination.country|lower }} {{ p.caption|lower }} {{ p.user.first_name|lower }}"
+                 data-destination="{{ p.destination.name|lower }} {{ p.destination.city|lower }} {{ p.destination.country|lower }}">
 
-                <!-- Like button -->
-<form method="POST" class="like-form mt-2">
-    {% csrf_token %}
-    <input type="hidden" name="like_photo" value="1">
-    <input type="hidden" name="photo_id" value="{{ p.pk }}">
-    <button type="submit" class="like-btn" style="background:none; border:none; cursor:pointer; font-size:18px;">
-        {% if p.is_liked %}
-            ❤️
-        {% else %}
-            🤍
-        {% endif %}
-    </button>
-    <span>{{ p.likes.count }} Likes</span>
-</form>
+                <div class="photo-wrapper">
+                    <img src="{{ p.image.url }}" alt="{{ p.caption|default:'Travel photo' }}" loading="lazy">
+                    <div class="photo-overlay">
+                        <div class="photo-info">
+                            <h4>{{ p.destination.name }}</h4>
+                            <p>by {{ p.user.first_name }} {{ p.user.last_name }}</p>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="photo-details">
+                    <div class="photo-meta">
+                        <span class="meta-item"><i class="far fa-calendar"></i> {{ p.created_at|date:"M d, Y" }}</span>
+                        <span class="meta-item"><i class="fas fa-map-marker-alt"></i> {{ p.destination.city }}</span>
+                    </div>
+
+                    {% if p.caption %}
+                        <p class="caption">"{{ p.caption }}"</p>
+                    {% endif %}
+
+                    <div class="interaction-bar">
+                        <form method="POST" class="like-form" data-photo-id="{{ p.pk }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="like_photo" value="1">
+                            <input type="hidden" name="photo_id" value="{{ p.pk }}">
+                            <button type="submit" class="like-btn {% if p.is_liked %}liked{% endif %}">
+                                <i class="{% if p.is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+                                {% if p.is_liked %}Liked{% else %}Like{% endif %}
+                                <span class="count">{{ p.likes.count }}</span>
+                            </button>
+                        </form>
+
+                        <details class="comments-toggle">
+                            <summary>
+                                <i class="far fa-comment-dots"></i> Comments ({{ p.comments.count }})
+                            </summary>
+                            <div class="comments-content">
+                                <div class="comments-list">
+                                    {% for c in p.comments.all %}
+                                        <div class="comment">
+                                            <strong>{{ c.user.first_name }}:</strong>
+                                            <span>{{ c.comment }}</span>
+                                            <small>{{ c.created_at|timesince }} ago</small>
+                                        </div>
+                                    {% empty %}
+                                        <p class="no-comments">No comments yet. Be the first!</p>
+                                    {% endfor %}
+                                </div>
+
+                                {% if request.session.user_id %}
+                                <form method="POST" class="comment-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="add_comment" value="1">
+                                    <input type="hidden" name="photo_id" value="{{ p.pk }}">
+                                    <textarea name="comment" rows="1" placeholder="Add a comment..." required class="form-control"></textarea>
+                                    <button type="submit" class="btn-comment-submit">Post</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </details>
+                    </div>
+                </div>
             </div>
-
-            <!-- Comments -->
-            <div class="comments mt-2">
-                <h1>Comments</h1>
-                <ul class="tips-list">
-                    {% for c in p.comments.all %}
-                        <li><strong>{{ c.user.first_name }}:</strong> {{ c.comment }}</li>
-                    {% empty %}
-                        <li>No comments yet.</li>
-                    {% endfor %}
-                </ul>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-camera"></i>
+                <h3>No photos found</h3>
+                <p>Be the first to share your travel memories, or try adjusting your filters!</p>
             </div>
-
-            {% if request.session.user_id %}
-            <!-- Add Comment -->
-            <form method="POST" class="mt-2">
-                {% csrf_token %}
-                <input type="hidden" name="add_comment" value="1">
-                <input type="hidden" name="photo_id" value="{{ p.pk }}">
-                <textarea name="comment" rows="2" class="form-control" placeholder="Add a comment..." required></textarea>
-                <button type="submit" class="btn btn-secondary mt-2">Post Comment</button>
-            </form>
-            {% endif %}
+            {% endfor %}
         </div>
-        {% endfor %}
+
     </div>
-</div>
+</section>
+
+<style>
+    /* Global Variables - Adapted for a community/social look (often blue/teal) */
+    :root {
+        --primary-color: #007bff; /* Blue */
+        --primary-hover: #0056b3;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --light-bg: #f8f9fa;
+        --card-bg: #ffffff;
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+        --border-radius-lg: 16px;
+    }
+
+    .section {
+        padding: 40px 0;
+        background-color: var(--light-bg);
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* 1. Header & Filter Bar (Reused from previous style) */
+    .page-header { text-align: center; margin: 40px 0; }
+    .page-title { font-size: 2.8rem; color: var(--primary-color); }
+    #resultsCount { color: var(--primary-color); font-weight: bold; }
+    
+    .search-filter-bar {
+        display: flex; flex-wrap: wrap; gap: 15px; align-items: center;
+        background: var(--card-bg); padding: 20px; border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md); margin-bottom: 40px;
+    }
+    .search-input { position: relative; flex: 1; min-width: 280px; }
+    .search-input i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+    
+    .form-control, .form-select, .search-input input {
+        width: 100%; padding: 14px 20px 14px 50px; border: 1px solid #ddd;
+        border-radius: 50px; font-size: 1rem; transition: all 0.3s;
+    }
+    .form-select { padding: 14px 18px; min-width: 220px; }
+    .search-input input:focus, .form-select:focus, .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15); }
+    
+    .btn { padding: 14px 20px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-outline { background: transparent; border: 2px solid #ddd; color: var(--text-secondary); }
+    .btn-outline:hover { background: var(--light-bg); border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-2px); }
+
+    /* 2. Upload Card */
+    .upload-card {
+        background: #eaf4ff; /* Very light blue */
+        padding: 30px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        border: 1px solid #cce5ff;
+    }
+    .upload-card h3 { 
+        margin: 0 0 20px 0; 
+        color: var(--primary-color); 
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    .upload-card h3 i { margin-right: 10px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+    .required { color: #dc3545; }
+    
+    /* Input adjustments for upload form */
+    .upload-card .form-select, .upload-card .form-control {
+        padding: 12px 15px; border-radius: 12px;
+    }
+ 
+ 
+    .form-group input[type="file"] + label {
+        display: block;
+        padding: 12px 20px;
+        background: var(--primary-color);
+        color: white;
+        text-align: center;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .form-group input[type="file"] + label:hover {
+        background-color: var(--primary-hover);
+    }
+
+    .btn-primary-submit {
+        background: var(--primary-color);
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .btn-primary-submit:hover { background-color: var(--primary-hover); }
+
+    /* 3. Photo Gallery Grid & Card */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 35px;
+    }
+
+    .photo-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .photo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .photo-wrapper { position: relative; height: 320px; overflow: hidden; }
+    .photo-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+    .photo-card:hover img { transform: scale(1.05); }
+
+    .photo-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(transparent 30%, rgba(0,0,0,0.8));
+        display: flex; align-items: flex-end; padding: 20px;
+        opacity: 1; /* Always visible to show destination */
+        transition: opacity 0.3s;
+    }
+    .photo-info { color: white; }
+    .photo-info h4 { margin: 0; font-size: 1.5rem; }
+    .photo-info p { margin: 4px 0 0; opacity: 0.9; font-size: 0.95rem; }
+
+    .photo-details { padding: 20px; flex-grow: 1; }
+    
+    .photo-meta {
+        display: flex; justify-content: space-between;
+        color: var(--text-secondary); font-size: 0.9rem;
+        margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 10px;
+    }
+    .meta-item i { color: var(--primary-color); margin-right: 5px; }
+
+    .caption {
+        color: var(--text-primary); font-style: italic;
+        margin: 12px 0 20px 0; line-height: 1.5; font-size: 0.95rem;
+    }
+   
+
+    /* 4. Interaction Bar */
+    .interaction-bar {
+        border-top: 1px solid #eee; padding-top: 15px;
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: 15px;
+    }
+    
+    /* Like Button */
+    .like-form { margin: 0; flex-shrink: 0; }
+    .like-btn {
+        background: #fff; border: 1px solid #ddd; color: var(--text-secondary);
+        padding: 8px 15px; border-radius: 50px; cursor: pointer;
+        font-weight: 600; transition: all 0.3s;
+        display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem;
+    }
+    .like-btn i { font-size: 1.1em; color: var(--text-secondary); transition: color 0.3s; }
+    .like-btn:hover { border-color: #e91e63; color: #e91e63; }
+    .like-btn:hover i { color: #e91e63; }
+    .like-btn.liked {
+        background: #fce4ec; border-color: #e91e63; color: #e91e63;
+    }
+    .like-btn.liked i { color: #e91e63; }
+
+    /* Comments Toggle/Section */
+    .comments-toggle { 
+        flex-grow: 1;
+        width: 100%;
+    }
+    .comments-toggle summary {
+        cursor: pointer; font-weight: 600; color: var(--primary-color);
+        padding: 8px 0; list-style: none; display: flex; align-items: center;
+        font-size: 0.95rem;
+    }
+    .comments-toggle summary i { margin-right: 8px; }
+    .comments-toggle summary::-webkit-details-marker { display: none; }
+    
+    .comments-list {
+        max-height: 200px; overflow-y: auto; margin: 12px 0; padding-right: 5px;
+        background: #fafafa; border-radius: 8px; padding: 10px;
+    }
+    .comment {
+        padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem;
+    }
+    .comment:last-child { border-bottom: none; }
+    .comment strong { color: var(--text-primary); }
+    .comment small { color: #999; float: right; font-size: 0.8rem; }
+    .no-comments { padding: 10px; text-align: center; color: var(--text-secondary); }
+
+    .comment-form {
+        margin-top: 12px; display: flex; gap: 10px;
+        align-items: center;
+    }
+    .comment-form textarea {
+        flex: 1; padding: 10px; border: 1px solid #ddd;
+        border-radius: 8px; resize: none; font-size: 0.9rem;
+    }
+    .btn-comment-submit {
+        background: var(--primary-color); color: white; border: none;
+        padding: 8px 15px; border-radius: 8px; cursor: pointer;
+        font-weight: 600; transition: background-color 0.3s;
+        height: fit-content;
+    }
+    .btn-comment-submit:hover { background-color: var(--primary-hover); }
+
+    .empty-state {
+        grid-column: 1 / -1; text-align: center; padding: 80px 20px;
+        color: var(--text-secondary); background: var(--card-bg);
+        border-radius: var(--border-radius-lg); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    .empty-state i { font-size: 4.5rem; margin-bottom: 20px; color: var(--primary-color); opacity: 0.5; }
+
+    /* 5. Responsiveness */
+    @media (max-width: 992px) {
+        .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+    }
+
+    @media (max-width: 768px) {
+        .page-title { font-size: 2.2rem; }
+        .form-grid { grid-template-columns: 1fr; }
+        .search-filter-bar { flex-direction: column; align-items: stretch; }
+        .search-input, .form-select, .btn-outline { min-width: 100%; }
+        .gallery-grid { grid-template-columns: 1fr; gap: 20px; }
+        .interaction-bar { flex-direction: column; gap: 10px; }
+        .like-form { width: 100%; }
+        .like-btn { width: 100%; justify-content: center; }
+        .comments-toggle { width: 100%; }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const destinationFilter = document.getElementById("destinationFilter");
+        const resetBtn = document.getElementById("resetFilters");
+        const cards = document.querySelectorAll(".photo-card");
+        const galleryGrid = document.getElementById("galleryGrid");
+
+        function filterGallery() {
+            const term = searchInput.value.toLowerCase().trim();
+            const selectedDest = destinationFilter.value;
+
+            let visible = 0;
+
+            cards.forEach(card => {
+                const searchData = card.getAttribute("data-search");
+                const destData = card.getAttribute("data-destination");
+
+                const matchesSearch = searchData.includes(term);
+                // Check if selectedDest is empty (All Destinations) OR if the card's destination data contains the selected filter value
+                const matchesDestination = !selectedDest || destData.includes(selectedDest);
+
+                if (matchesSearch && matchesDestination) {
+                    card.style.display = "flex"; // Use flex since the card structure changed for better mobile layout
+                    visible++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Update result count
+            document.getElementById("resultsCount").textContent = visible;
+            
+            // Handle empty state display
+            const emptyState = galleryGrid.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = (visible === 0 ? 'block' : 'none');
+            }
+        }
+
+        searchInput.addEventListener("input", filterGallery);
+        destinationFilter.addEventListener("change", filterGallery);
+        resetBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            destinationFilter.value = "";
+            filterGallery();
+        });
+
+        // Initial filter run
+        filterGallery();
+    });
+</script>
+
 {% endblock %}

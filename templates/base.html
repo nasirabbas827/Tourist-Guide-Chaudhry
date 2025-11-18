@@ -7,19 +7,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-    --primary-color: #ff5a5f; /* Cake pink/red */
-    --primary-hover: #e14d52;
-    --secondary-color: #ffcc00;
-    --secondary-hover: #e6b800;
-    --text-primary: #1f2937;
-    --text-secondary: #4b5563;
-    --bg-primary: #ffffff;
-    --bg-secondary: #fdf2f2;
-    --border-color: #e5e7eb;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
-}
+            --primary-color: #ff5a5f; /* Cake pink/red */
+            --primary-hover: #e14d52;
+            --secondary-color: #ffcc00;
+            --secondary-hover: #e6b800;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --bg-primary: #ffffff;
+            --bg-secondary: #fdf2f2;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+
+            /* Toast Colors */
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+
         /* Global Styles */
         * {
             margin: 0;
@@ -263,164 +270,274 @@
             color: #3498db;
         }
 
-        
-        
         /* Forms */
-form {
-    max-width: 500px;
-    margin: 30px auto;
-    padding: 20px;
-    background: var(--bg-primary);
-    border-radius: 8px;
-    box-shadow: var(--shadow-md);
-}
+        form {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 20px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+        }
 
-label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-}
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
 
-input, select, textarea , select[multiple] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
+        input, select, textarea, select[multiple] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
 
-input:focus, select:focus, textarea:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 5px rgba(255, 90, 95, 0.4);
-}
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 90, 95, 0.4);
+        }
 
-input[type="submit"], button {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
+        input[type="submit"], button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
 
-input[type="submit"]:hover, button:hover {
-    background: var(--primary-hover);
-}
+        input[type="submit"]:hover, button:hover {
+            background: var(--primary-hover);
+        }
 
-/* Table */
-table {
-    width: 90%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background: var(--bg-primary);
-    box-shadow: var(--shadow-md);
-    border-radius: 8px;
-    overflow: hidden;
-}
+        /* Table */
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: var(--bg-primary);
+            box-shadow: var(--shadow-md);
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-th, td {
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    text-align: left;
-}
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
 
-th {
-    background: var(--primary-color);
-    color: white;
-}
+        th {
+            background: var(--primary-color);
+            color: white;
+        }
 
-tr:hover {
-    background: var(--bg-secondary);
-}
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-            }
-            
-            nav ul {
-                margin-top: 1rem;
-            }
-            
-            nav ul li {
-                margin-left: 1rem;
-                margin-right: 1rem;
-            }
-            
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            
-            .section-title {
-                font-size: 1.8rem;
-            }
+            .header-container { flex-direction: column; }
+            nav ul { margin-top: 1rem; }
+            nav ul li { margin-left: 1rem; margin-right: 1rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .section-title { font-size: 1.8rem; }
         }
         
         @media (max-width: 480px) {
-            nav ul {
-                flex-direction: column;
-                align-items: center;
+            nav ul { flex-direction: column; align-items: center; }
+            nav ul li { margin: 0.5rem 0; }
+            .hero { height: 70vh; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero p { font-size: 1rem; }
+        }
+
+        /* ──────────────────────────────
+           CUSTOM TOAST NOTIFICATIONS (New Addition)
+           ────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .toast {
+            min-width: 320px;
+            max-width: 420px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(120%);
+            animation: slideIn 0.5s ease forwards;
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            gap: 14px;
+            border-left: 6px solid;
+            position: relative;
+        }
+
+        .toast.success   { border-left-color: var(--success-color); }
+        .toast.error     { border-left-color: var(--error-color); }
+        .toast.warning   { border-left-color: var(--warning-color); }
+        .toast.info      { border-left-color: var(--info-color); }
+
+        .toast-icon {
+            font-size: 1.7rem;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon   { color: var(--success-color); }
+        .toast.error .toast-icon     { color: var(--error-color); }
+        .toast.warning .toast-icon   { color: var(--warning-color); }
+        .toast.info .toast-icon      { color: var(--info-color); }
+
+        .toast-content {
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Progress bar at bottom */
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: rgba(0,0,0,0.1);
+            animation: shrink 3s linear forwards;
+        }
+
+        .toast.success::after   { background: var(--success-color); opacity: 0.3; }
+        .toast.error::after     { background: var(--error-color); opacity: 0.3; }
+        .toast.warning::after   { background: var(--warning-color); opacity: 0.3; }
+        .toast.info::after      { background: var(--info-color); opacity: 0.3; }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            to { opacity: 0; transform: translateX(120%); }
+        }
+
+        @keyframes shrink {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+        .toast.hide {
+            animation: slideOut 0.5s ease forwards;
+        }
+
+        @media (max-width: 480px) {
+            .toast-container {
+                left: 15px;
+                right: 15px;
+                top: 10px;
             }
-            
-            nav ul li {
-                margin: 0.5rem 0;
-            }
-            
-            .hero {
-                height: 70vh;
-            }
-            
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
+            .toast {
+                min-width: auto;
             }
         }
     </style>
 </head>
 <body>
-<!-- Header -->
-<header>
-    <div class="container header-container">
-        <div class="logo">Wanderlust Diaries</div>
-        <nav>
-            <ul>
-                <li><a href="{% url 'index' %}">Home</a></li>
-                <li><a href="{% url 'destination_list' %}">Destinations</a></li>
-                <li><a href="{% url 'tips_list' %}">Travel Tips</a></li>
-                <li><a href="{% url 'gallery' %}">Gallery</a></li>
 
-                {% if request.session.user_id %}
-                    <!-- Authenticated user links -->
-                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-                    <li><a href="{% url 'profile_update' %}">Profile</a></li>
-                    <li><a href="{% url 'travelplan_list' %}">Travel Plan</a></li>
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <!-- Non-authenticated user links -->
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">Wanderlust Diaries</div>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'destination_list' %}">Destinations</a></li>
+                    <li><a href="{% url 'tips_list' %}">Travel Tips</a></li>
+                    <li><a href="{% url 'gallery' %}">Gallery</a></li>
+
+                    {% if request.session.user_id %}
+                        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li><a href="{% url 'profile_update' %}">Profile</a></li>
+                        <li><a href="{% url 'travelplan_list' %}">Travel Plan</a></li>
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CUSTOM TOAST NOTIFICATIONS (Replaces old messages block) -->
+    <div class="toast-container" id="toast-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast {{ message.tags|default:'info' }}" data-autohide="true">
+                    <div class="toast-icon">
+                        {% if 'success' in message.tags %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif 'error' in message.tags %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif 'warning' in message.tags %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="toast-content">
+                        {{ message|safe }}
+                    </div>
+                    <button class="toast-close" aria-label="Close">
+                        ×
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
-</header>
 
+    <!-- Main Content -->
+    <div>
+        {% block content %}{% endblock %}
+    </div>
 
-<div>
-    {% if messages %}
-      {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    {% block content %}{% endblock %}
-</div>
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -433,5 +550,26 @@ tr:hover {
             <p>© 2025 Wanderlust Diaries. All rights reserved.</p>
         </div>
     </footer>
-</body> 
+
+    <!-- Auto-dismiss toasts after 3 seconds -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toasts = document.querySelectorAll(".toast[data-autohide='true']");
+
+            toasts.forEach(toast => {
+                let timer = setTimeout(() => {
+                    toast.classList.add("hide");
+                    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+                }, 3000);
+
+                // Manual close cancels timer
+                toast.querySelector(".toast-close").addEventListener("click", function () {
+                    clearTimeout(timer);
+                    toast.classList.add("hide");
+                    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+                });
+            });
+        });
+    </script>
+</body>
 </html>

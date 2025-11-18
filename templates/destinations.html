@@ -1,31 +1,478 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
 
-<section class="container">
-    
-    <h2 class="section-title">Explore Destinations</h2>
-    <div class="destinations">
-        {% for d in destinations %}
-            <div class="card">
+<section class="section">
+    <div class="container">
+
+        <div class="page-header">
+            <h1 class="page-title">Explore All Destinations</h1>
+            <p>Discover {{ destinations.count }} amazing places around the world</p>
+        </div>
+
+        <div class="search-filter-bar">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, city, or country..." autocomplete="off">
+            </div>
+
+            <select id="seasonFilter">
+                <option value="">All Seasons</option>
+                <option value="summer">Summer</option>
+                <option value="winter">Winter</option>
+                <option value="spring">Spring</option>
+                <option value="autumn">Autumn</option>
+            </select>
+
+            <select id="typeFilter">
+                <option value="">All Travel Types</option>
+                <option value="adventure">Adventure</option>
+                <option value="cultural">Cultural</option>
+                <option value="leisure">Leisure</option>
+                <option value="family">Family</option>
+                <option value="luxury">Luxury</option>
+            </select>
+
+            <button id="resetFilters" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+
+        <div class="results-info">
+            <p><strong id="resultsCount">{{ destinations.count }}</strong> destinations found</p>
+        </div>
+
+        <div class="destinations-grid" id="destinationsGrid">
+            {% for d in destinations %}
+            <div class="destination-card"
+                 data-name="{{ d.name|lower }} {{ d.city|lower }} {{ d.country|lower }}"
+                 data-season="{{ d.best_season }}"
+                 data-type="{{ d.travel_type }}">
+
                 {% if d.image %}
-                    <img src="{{ d.image.url }}" alt="{{ d.name }}">
+                    <div class="card-image">
+                        <img src="{{ d.image.url }}" alt="{{ d.name }}" loading="lazy">
+                    </div>
                 {% else %}
-                    <div class="card-image-placeholder">
-                        <span>No Image Available</span>
+                    <div class="card-image placeholder">
+                        <i class="fas fa-image"></i>
+                        <span>No Image</span>
                     </div>
                 {% endif %}
-                <div class="card-content">
-                    <h3>{{ d.name }}, {{ d.country }}</h3>
-                    <p>{{ d.description|truncatewords:20 }}</p>
-                    <p><strong>Best Season:</strong> {{ d.best_season }}</p>
-                    <p><strong>Type:</strong> {{ d.travel_type }}</p>
-                    <a href="{% url 'destination_detail' d.pk %}" style="margin-top: 20px;" class="btn">Explore More</a>
+
+                <div class="card-body">
+                    <h3>{{ d.name }}</h3>
+                    <p class="location">
+                        <i class="fas fa-map-marker-alt"></i> {{ d.city }}, {{ d.country }}
+                    </p>
+
+                    <p class="description">{{ d.description|truncatewords:18 }}</p>
+
+                    <div class="tags">
+                        <span class="tag season {{ d.best_season }}">{{ d.get_best_season_display }}</span>
+                        <span class="tag type {{ d.travel_type }}">{{ d.get_travel_type_display }}</span>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="{% url 'destination_detail' d.pk %}" class="btn btn-primary">
+                            Explore More
+                        </a>
+                    </div>
                 </div>
             </div>
-        {% empty %}
-            <p>No destinations available yet.</p>
-        {% endfor %}
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-globe-americas"></i>
+                <h3>No destinations found</h3>
+                <p>Try adjusting your filters or come back later!</p>
+            </div>
+            {% endfor %}
+        </div>
+
     </div>
 </section>
+
+<style>
+    /* Global Variables (Assuming they are defined in base.html or a linked stylesheet, but redefined for safety) */
+    :root {
+        --primary-color: #ff5a5f; /* Airbnb Red/Coral */
+        --primary-hover: #e04a50;
+        --secondary-color: #00a699; /* Teal for accent */
+        --text-primary: #333;
+        --text-secondary: #666;
+        --light-bg: #f7f7f7;
+        --card-bg: #ffffff;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+        --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+        --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.2);
+        --border-radius-lg: 18px;
+        --border-radius-sm: 8px;
+    }
+
+    /* General Styling */
+    .section {
+        padding: 40px 0;
+        background-color: var(--light-bg);
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .page-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+    .page-header p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+    }
+
+    /* Search & Filter Bar */
+    .search-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        background: var(--card-bg);
+        padding: 20px 25px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        margin: 30px 0;
+        border: 1px solid #eee;
+    }
+
+    .search-input {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+    .search-input i {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    .search-input input {
+        width: 100%;
+        padding: 14px 20px 14px 50px;
+        border: 1px solid #ddd;
+        border-radius: 50px; /* Fully rounded */
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    .search-input input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(255, 90, 95, 0.15);
+    }
+
+    select {
+        padding: 14px 18px;
+        border: 1px solid #ddd;
+        border-radius: 50px; /* Match search input rounding */
+        background: var(--card-bg);
+        font-size: 1rem;
+        min-width: 180px;
+        cursor: pointer;
+        /* Custom arrow style */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%20197.4l-143.5-143.2-143.2%20143.2c-7.3%207.3-19.1%207.3-26.4%200-7.3-7.3-7.3-19.1%200-26.4l156.4-156.4c3.6-3.6%208.3-5.5%2013.2-5.5s9.6%201.9%2013.2%205.5l156.4%20156.4c7.3%207.3%207.3%2019.1%200%2026.4-7.3%207.3-19.1%207.3-26.4%200z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat;
+        background-position: right 18px center;
+        background-size: 10px;
+        padding-right: 40px;
+    }
+
+    .btn {
+        padding: 14px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    .btn-outline {
+        background: transparent;
+        border: 2px solid #ddd;
+        color: var(--text-secondary);
+    }
+    .btn-outline:hover {
+        background: var(--light-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .results-info {
+        margin: 25px 0 15px;
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        text-align: right;
+    }
+    .results-info strong {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    /* Destinations Grid */
+    .destinations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .destination-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .destination-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-image {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    .destination-card:hover .card-image img {
+        transform: scale(1.05);
+    }
+
+    .card-image.placeholder {
+        background: #e9ecef;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 1.2rem;
+    }
+    .card-image.placeholder i {
+        font-size: 4rem;
+        margin-bottom: 10px;
+        opacity: 0.7;
+    }
+
+    .card-body {
+        padding: 24px;
+        flex-grow: 1; /* Ensures card bodies are the same size */
+        display: flex;
+        flex-direction: column;
+    }
+    .card-body h3 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+    }
+    .location {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+    .location i {
+        color: var(--secondary-color);
+        margin-right: 5px;
+    }
+    .description {
+        color: var(--text-secondary);
+        line-height: 1.5;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+    }
+
+    /* Tags */
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+        margin-top: auto; /* Push tags and actions to the bottom */
+    }
+    .tag {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    
+    /* Specific Season Colors */
+    .tag.summer { background: #ffeb3b40; color: #f9a825; } /* Amber */
+    .tag.winter { background: #e3f2fd; color: #1565c0; } /* Blue */
+    .tag.spring { background: #e8f5e9; color: #43a047; } /* Green */
+    .tag.autumn { background: #fbe9e7; color: #d84315; } /* Deep Orange */
+    
+    /* Specific Type Colors */
+    .tag.adventure { background: #ffe0b2; color: #f57c00; } /* Orange */
+    .tag.cultural { background: #e1bee7; color: #8e24aa; } /* Purple */
+    .tag.leisure { background: #b2ebf2; color: #00838f; } /* Cyan */
+    .tag.family { background: #c5e1a5; color: #558b2f; } /* Light Green */
+    .tag.luxury { background: #ffd54f; color: #ff8f00; } /* Gold */
+
+    /* Card Action Button */
+    .card-actions {
+        text-align: left;
+        margin-top: 15px;
+    }
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        padding: 10px 20px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 8px rgba(255, 90, 95, 0.4);
+    }
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-secondary);
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin: 30px 0;
+    }
+    .empty-state i {
+        font-size: 5rem;
+        color: var(--secondary-color);
+        margin-bottom: 20px;
+        opacity: 0.6;
+    }
+    .empty-state h3 {
+        font-size: 1.8rem;
+        color: var(--text-primary);
+    }
+
+    /* Responsiveness */
+    @media (max-width: 992px) {
+        .search-filter-bar {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .page-title { font-size: 2.2rem; }
+        .page-header p { font-size: 1rem; }
+        
+        .search-filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 15px;
+        }
+        .search-input, select, .btn-outline {
+            min-width: 100%;
+            flex-grow: 1;
+        }
+        
+        .destinations-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .search-input input, select, .btn {
+            padding: 12px 15px;
+        }
+        .card-body h3 {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const seasonFilter = document.getElementById("seasonFilter");
+        const typeFilter = document.getElementById("typeFilter");
+        const resetBtn = document.getElementById("resetFilters");
+        const cards = document.querySelectorAll(".destination-card");
+        const resultsCount = document.getElementById("resultsCount");
+
+        function filterDestinations() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedSeason = seasonFilter.value;
+            const selectedType = typeFilter.value;
+
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute("data-name");
+                const season = card.getAttribute("data-season");
+                const type = card.getAttribute("data-type");
+
+                const matchesSearch = name.includes(searchTerm);
+                const matchesSeason = !selectedSeason || season === selectedSeason;
+                const matchesType = !selectedType || type === selectedType;
+
+                if (matchesSearch && matchesSeason && matchesType) {
+                    card.style.display = "flex"; /* Changed from 'block' to 'flex' to maintain card body alignment */
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            resultsCount.textContent = visibleCount;
+            
+            // Show/hide empty state
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
+        // Event Listeners
+        searchInput.addEventListener("input", filterDestinations);
+        seasonFilter.addEventListener("change", filterDestinations);
+        typeFilter.addEventListener("change", filterDestinations);
+
+        resetBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            seasonFilter.value = "";
+            typeFilter.value = "";
+            filterDestinations();
+        });
+
+        // Initial count (Added a slight delay to ensure CSS has loaded if it relies on classes)
+        setTimeout(filterDestinations, 0);
+    });
+</script>
 
 {% endblock %}
